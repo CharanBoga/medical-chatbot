@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MediAssist AI</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="sidebar">
+
+        <div class="brand">
+            <div class="brand-icon">
+                <i class="fa-solid fa-heart-pulse"></i>
+            </div>
+
+            <div>
+                <h2>MediAssist</h2>
+                <span>Medical AI Assistant</span>
+            </div>
+        </div>
+
+        <div class="sidebar-menu">
+
+            <button class="sidebar-item">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>About MediAssist</span>
+            </button>
+
+            <button class="sidebar-item">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Privacy & Safety</span>
+            </button>
+
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="secure-icon">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+
+            <div>
+                <strong>Private & Secure</strong>
+                <p>Your conversations are protected.</p>
+            </div>
+        </div>
+
+    </aside>
+
+
+    <!-- ================= MAIN ================= -->
+    <main class="main">
+
+        <!-- HEADER -->
+        <header class="header">
+
+            <div class="header-left">
+
+                <div class="assistant-avatar">
+                    <i class="fa-solid fa-stethoscope"></i>
+                </div>
+
+                <div>
+                    <h3>MediAssist AI</h3>
+                    <span>
+                        <span class="online-dot"></span>
+                        AI Assistant · Online
+                    </span>
+                </div>
+
+            </div>
+
+
+            <div class="header-right">
+
+                <button id="clearChat" class="icon-button" title="Clear chat">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+
+                <div class="profile">
+                    M
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- ================= CHAT AREA ================= -->
+        <section class="chat-container">
+
+            <div class="messages">
+
+                <!-- WELCOME SCREEN -->
+                <div class="welcome" id="welcome">
+
+                    <div class="welcome-icon">
+                        <i class="fa-solid fa-heart-pulse"></i>
+                    </div>
+
+                    <h1>How can I help you today?</h1>
+
+                    <p>
+                        I'm MediAssist AI, your medical information assistant.
+                        Ask me about symptoms, conditions, medications,
+                        treatments, or general health information.
+                    </p>
+
+
+                    <div class="suggestions">
+
+                        <button class="suggestion">
+                            <i class="fa-solid fa-stethoscope"></i>
+                            <span>
+                                <strong>Symptoms</strong>
+                                <small>What could my symptoms mean?</small>
+                            </span>
+                        </button>
+
+                        <button class="suggestion">
+                            <i class="fa-solid fa-pills"></i>
+                            <span>
+                                <strong>Medications</strong>
+                                <small>Learn about a medication</small>
+                            </span>
+                        </button>
+
+                        <button class="suggestion">
+                            <i class="fa-solid fa-notes-medical"></i>
+                            <span>
+                                <strong>Health Conditions</strong>
+                                <small>Understand a medical condition</small>
+                            </span>
+                        </button>
+
+                        <button class="suggestion">
+                            <i class="fa-solid fa-heart"></i>
+                            <span>
+                                <strong>General Health</strong>
+                                <small>Get health information</small>
+                            </span>
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= INPUT AREA ================= -->
+        <div class="input-area">
+
+            <form id="chatForm">
+
+                <div class="input-wrapper">
+
+                    <button type="button"
+                            class="attachment"
+                            title="Attachment">
+
+                        <i class="fa-solid fa-paperclip"></i>
+
+                    </button>
+
+
+                    <textarea
+                        id="text"
+                        name="msg"
+                        rows="1"
+                        placeholder="Describe your symptoms or ask a medical question..."
+                        autocomplete="off"
+                        required></textarea>
+
+
+                    <button
+                        type="submit"
+                        id="send"
+                        class="send-button">
+
+                        <i class="fa-solid fa-arrow-up"></i>
+
+                    </button>
+
+                </div>
+
+            </form>
+
+
+            <p class="disclaimer">
+                <i class="fa-solid fa-circle-info"></i>
+
+                MediAssist AI provides general medical information and is
+                not a substitute for professional medical advice.
+            </p>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script>
+
+const form = document.getElementById("chatForm");
+const input = document.getElementById("text");
+const messages = document.querySelector(".messages");
+const sendButton = document.getElementById("send");
+const welcome = document.getElementById("welcome");
+const clearChat = document.getElementById("clearChat");
+
+
+// Escape HTML for security
+function escapeHTML(text) {
+
+    const div = document.createElement("div");
+    div.textContent = text;
+
+    return div.innerHTML;
+}
+
+
+// Add user message
+function addUserMessage(message) {
+
+    const messageRow = document.createElement("div");
+
+    messageRow.className = "message-row user-row";
+
+    messageRow.innerHTML = `
+
+        <div class="message user-message">
+            ${escapeHTML(message)}
+        </div>
+
+        <div class="message-avatar user-avatar">
+            M
+        </div>
+
+    `;
+
+    messages.appendChild(messageRow);
+
+    scrollToBottom();
+}
+
+
+// Add bot message
+function addBotMessage(message) {
+
+    const messageRow = document.createElement("div");
+
+    messageRow.className = "message-row bot-row";
+
+    messageRow.innerHTML = `
+
+        <div class="message-avatar bot-avatar">
+            <i class="fa-solid fa-heart-pulse"></i>
+        </div>
+
+        <div class="message bot-message">
+            ${escapeHTML(message)}
+        </div>
+
+    `;
+
+    messages.appendChild(messageRow);
+
+    scrollToBottom();
+}
+
+
+// Typing indicator
+function showTyping() {
+
+    const typing = document.createElement("div");
+
+    typing.className = "message-row bot-row";
+    typing.id = "typing";
+
+    typing.innerHTML = `
+
+        <div class="message-avatar bot-avatar">
+            <i class="fa-solid fa-heart-pulse"></i>
+        </div>
+
+        <div class="message bot-message typing">
+
+            <span></span>
+            <span></span>
+            <span></span>
+
+        </div>
+
+    `;
+
+    messages.appendChild(typing);
+
+    scrollToBottom();
+}
+
+
+// Remove typing indicator
+function removeTyping() {
+
+    const typing = document.getElementById("typing");
+
+    if (typing) {
+        typing.remove();
+    }
+
+}
+
+
+// Scroll chat to bottom
+function scrollToBottom() {
+
+    const chatContainer = document.querySelector(".chat-container");
+
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+}
+
+
+// Send message
+form.addEventListener("submit", async function (e) {
+
+    e.preventDefault();
+
+    const message = input.value.trim();
+
+    if (!message) {
+        return;
+    }
+
+
+    // Remove welcome screen
+    if (welcome) {
+        welcome.remove();
+    }
+
+
+    // Display user message
+    addUserMessage(message);
+
+
+    // Clear input
+    input.value = "";
+
+    input.style.height = "auto";
+
+
+    // Disable send
+    sendButton.disabled = true;
+
+
+    // Show typing
+    showTyping();
+
+
+    try {
+
+        const formData = new FormData();
+
+        formData.append("msg", message);
+
+
+        const response = await fetch("/get", {
+
+            method: "POST",
+
+            body: formData
+
+        });
+
+
+        if (!response.ok) {
+            throw new Error("Server error");
+        }
+
+
+        const data = await response.text();
+
+
+        removeTyping();
+
+        addBotMessage(data);
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        removeTyping();
+
+        addBotMessage(
+            "Sorry, something went wrong. Please try again."
+        );
+
+    }
+
+
+    sendButton.disabled = false;
+
+    input.focus();
+
+});
+
+
+// Enter = send
+// Shift + Enter = new line
+input.addEventListener("keydown", function (e) {
+
+    if (e.key === "Enter" && !e.shiftKey) {
+
+        e.preventDefault();
+
+        form.dispatchEvent(new Event("submit"));
+
+    }
+
+});
+
+
+// Auto resize textarea
+input.addEventListener("input", function () {
+
+    this.style.height = "auto";
+
+    this.style.height = Math.min(
+        this.scrollHeight,
+        140
+    ) + "px";
+
+});
+
+
+// Suggestion buttons
+document.querySelectorAll(".suggestion").forEach(button => {
+
+    button.addEventListener("click", function () {
+
+        const text = this.querySelector("small").textContent;
+
+        input.value = text;
+
+        input.focus();
+
+    });
+
+});
+
+
+// Clear chat
+clearChat.addEventListener("click", function () {
+
+    messages.innerHTML = `
+
+        <div class="welcome" id="welcome">
+
+            <div class="welcome-icon">
+                <i class="fa-solid fa-heart-pulse"></i>
+            </div>
+
+            <h1>How can I help you today?</h1>
+
+            <p>
+                I'm MediAssist AI, your medical information assistant.
+                Ask me about symptoms, conditions, medications,
+                treatments, or general health information.
+            </p>
+
+            <div class="suggestions">
+
+                <button class="suggestion">
+                    <i class="fa-solid fa-stethoscope"></i>
+                    <span>
+                        <strong>Symptoms</strong>
+                        <small>What could my symptoms mean?</small>
+                    </span>
+                </button>
+
+                <button class="suggestion">
+                    <i class="fa-solid fa-pills"></i>
+                    <span>
+                        <strong>Medications</strong>
+                        <small>Learn about a medication</small>
+                    </span>
+                </button>
+
+                <button class="suggestion">
+                    <i class="fa-solid fa-notes-medical"></i>
+                    <span>
+                        <strong>Health Conditions</strong>
+                        <small>Understand a medical condition</small>
+                    </span>
+                </button>
+
+                <button class="suggestion">
+                    <i class="fa-solid fa-heart"></i>
+                    <span>
+                        <strong>General Health</strong>
+                        <small>Get health information</small>
+                    </span>
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    // Re-enable suggestion buttons
+    document.querySelectorAll(".suggestion").forEach(button => {
+
+        button.addEventListener("click", function () {
+
+            input.value =
+                this.querySelector("small").textContent;
+
+            input.focus();
+
+        });
+
+    });
+
+});
+
+</script>
+
+</body>
+</html>
